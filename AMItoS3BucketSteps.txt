@@ -1,0 +1,103 @@
+i)Steps to Set Up AWS CLI to create and upload EC2 bundle in S3 :
+
+Follow  all the steps in both Master and Slave EC2 instances:
+
+1. Input this line in ubuntu terminal
+curl -O https://bootstrap.pypa.io/get-pip.py
+
+2. Input this line in ubuntu terminal
+sudo python get-pip.py
+
+3. Input this line in ubuntu terminal
+sudo pip install awscli
+
+4. Input this line in ubuntu terminal
+ sudo pip install awscli --ignore-installed six
+
+5. Input this line in ubuntu terminal 
+sudo apt-get install unzip
+
+6. Input this line in ubuntu terminal 
+curl "https://s3.amazonaws.com/aws-cli/awscli-bundle.zip" -o "awscli-bundle.zip"
+
+7. Input this line in ubuntu terminal
+unzip awscli-bundle.zip
+
+8. Input this line in ubuntu terminal
+sudo ./awscli-bundle/install -i /usr/local/aws -b /usr/local/bin/aws
+
+9. Input this line in ubuntu terminal
+aws configure
+
+Enter the following details while prompted:
+
+WS Access Key ID [None]: <Access Key>
+AWS Secret Access Key [None]: <Secret Key>
+Default region name [None]: <Region Name>
+Default output format [None]: ENTER
+
+10. Input this line in ubuntu terminal
+sudo apt-get install ec2-ami-tools
+
+ii) Create and Upload Bundle in S3
+
+ Create  S3 Buckets in Oregon Region :
+
+1. AWS -> S3 => Create Bucket => Bucket Name: 'manangatti-dharman-lekha-s3-bucket' and Region : 'Oregon'
+
+2. AWS -> S3 => Create Bucket => Bucket Name: 'manangatti-dharman-lekha-s3-slave-bucket' and Region : 'Oregon'
+
+3. Steps to create bundle
+
+ To Create Bundle  => Execute in both master and slave nodes:
+
+sudo ec2-bundle-vol --destination /mnt --privatekey pk-CBXSMHCEALOKJIIVWU7BWLAEW7ONPJJN.pem --cert cert-CBXSMHCEALOKJIIVWU7BWLAEW7ONPJJN.pem --user 452376692230 --exclude /home --prefix image-20160714 --arch x86_64
+
+4. Steps to upload bundle
+
+To Upload Bundle in S3:
+
+Master:
+ sudo ec2-upload-bundle -b manangatti-dharman-lekha-s3-bucket /instance-snapshots/image-20160714 --manifest /mnt/image-20160714.manifest.xml --access-key AKIAIXUWMDLMVLYVBZOQ --secret-key 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
+
+Slave:
+
+sudo ec2-upload-bundle -b manangatti-dharman-lekha-s3-slave-bucket /instance-snapshots/image-20160714 --manifest /mnt/image-20160714.manifest.xml --access-key AKIAIXUWMDLMVLYVBZOQ --secret-key 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
+
+
+iii) Register a New AMI :
+
+1. Right click on the Master AMI => Register New AMI =>
+
+AMI Manifest Path :  https://s3.amazonaws.com:80/manangatti-dharman-lekha-s3-bucket/image-20160714.manifest.xml
+
+AMI Name:     Mohan-Hadoop-Master
+
+2. Click on Register
+
+3. Right click on the Slave AMI -> Register New AMI ->
+
+AMI Manifest Path :  https://s3.amazonaws.com:80/manangatti-dharman-lekha-s3-slave-bucket/image-20160714.manifest.xml
+
+AMI Name:     Mohan-Hadoop-Slave
+
+4. Click on Register
+
+
+The created AMIs are publicly available to use and can be used to create instances :
+
+Region : Oregon
+
+Hadoop Master AMI:
+
+AMI ID :  ami-cedc78ae
+AMI Name: ManangattiDharmanLekha-Hadoop-Master
+Name:     manangatti Dharman Lekha master
+Source:   manangatti-dharman-lekha-s3-bucket/image-20160714.manifest.xml
+
+Hadoop Slave AMI :
+
+AMI ID :  ami-36f65256
+AMI Name: ManangattiDharmanLekha-Hadoop-Slave
+Name:     manangatti Dharman Lekha slave
+Source:   manangatti-dharman-lekha-s3-slave-bucket/image-20160714.manifest.xml
